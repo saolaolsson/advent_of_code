@@ -33,8 +33,8 @@ static int calc_distance_sum(std::vector<int> left_values,
     const auto distance = std::abs(std::get<1>(ints) - std::get<0>(ints));
     return sum + distance;
   };
-  return std::ranges::fold_left(
-      std::ranges::zip_view(left_values, right_values), 0, sum_tuple_distance);
+  return std::ranges::fold_left(std::views::zip(left_values, right_values), 0,
+                                sum_tuple_distance);
 }
 
 static int calc_similiarity_score(const std::vector<int>& left_values,

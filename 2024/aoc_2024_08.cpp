@@ -22,7 +22,7 @@ int main() {
   std::set<Vector2i> multi_antinodes;
   for (const auto& antenna : antennae) {
     for (const auto& [antenna_a, antenna_b] :
-         std::ranges::cartesian_product_view(antenna.second, antenna.second)) {
+         std::views::cartesian_product(antenna.second, antenna.second)) {
       if (antenna_a == antenna_b) {
         continue;
       }

@@ -3,7 +3,6 @@
 #include "shared.hpp"
 
 #include <algorithm>
-#include <array>
 #include <iostream>
 #include <utility>
 
@@ -24,11 +23,10 @@ static bool find_xmas_in_direction(const Grid& grid, const Vector2i& location,
 }
 
 static int count_xmas(const Grid& grid, const Vector2i& location) {
-  constexpr auto directions = std::to_array<Vector2i>(
-      {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}});
-  return std::ranges::count_if(directions, [&](const Vector2i& direction) {
-    return find_xmas_in_direction(grid, location, direction);
-  });
+  return std::ranges::count_if(
+      Grid::DIRECTIONS, [&](const Vector2i& direction) {
+        return find_xmas_in_direction(grid, location, direction);
+      });
 }
 
 static std::pair<std::string, std::string> get_diagonals(

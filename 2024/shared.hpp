@@ -85,6 +85,11 @@ class Grid {
   iterator cbegin() const { return iterator(this, Vector2i{}); }
   iterator cend() const { return iterator(this, {0, size().y}); }
 
+  static constexpr auto DIRECTIONS = std::to_array<Vector2i>(
+      {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}});
+  static constexpr auto CARDINAL_DIRECTIONS =
+      std::to_array<Vector2i>({{0, -1}, {1, 0}, {0, 1}, {-1, 0}});
+
   Grid(std::istream& istream) {
     std::copy(std::istream_iterator<Line>{istream}, {},
               std::back_inserter(locations));

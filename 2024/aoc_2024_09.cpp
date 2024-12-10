@@ -8,6 +8,11 @@
 #include <iterator>
 #include <vector>
 
+static constexpr auto FREE_BLOCK_ID = -1;
+static bool is_free_block(const int file_id) {
+  return file_id == FREE_BLOCK_ID;
+};
+
 static std::vector<int> extract_disk_map(std::istream& istream) {
   std::vector<int> disk_map;
   auto file_id = 0;
@@ -15,18 +20,16 @@ static std::vector<int> extract_disk_map(std::istream& istream) {
   bool is_file = true;
   while (char_it != std::istream_iterator<char>{}) {
     const auto count = *char_it++ - '0';
-    const auto value = is_file ? file_id++ : -1;
+    const auto value = is_file ? file_id++ : FREE_BLOCK_ID;
     std::fill_n(std::back_inserter(disk_map), count, value);
     is_file = !is_file;
   }
   return disk_map;
 }
 
-static bool is_free_block(const int file_id) { return file_id == -1; };
-
 static std::vector<int> defragment_free_blocks(
     const std::vector<int>& disk_map) {
-  std::vector<int> defragged_disk_map(disk_map.size(), -1);
+  std::vector<int> defragged_disk_map(disk_map.size(), FREE_BLOCK_ID);
   auto block_it = disk_map.cbegin();
   auto defrag_block_it = disk_map.crbegin();
   auto defragged_block_it = defragged_disk_map.begin();
@@ -88,7 +91,7 @@ static std::vector<int> defragment_files(std::vector<int> disk_map) {
     if (found_free_space_left_of_file) {
       const auto file_id = *defrag_file_rbegin;
       std::fill_n(free_block_it, file_size, file_id);
-      std::fill_n(defrag_file_rbegin, file_size, -1);
+      std::fill_n(defrag_file_rbegin, file_size, FREE_BLOCK_ID);
     }
     defrag_file_it = defrag_file_rend;
   }
@@ -96,8 +99,7 @@ static std::vector<int> defragment_files(std::vector<int> disk_map) {
 }
 
 static std::int64_t calc_checksum(const std::vector<int>& disk_map) {
-  auto block_index = 0;
-  const auto checksum = [&block_index](auto sum, const int id) {
+  const auto checksum = [block_index = 0](auto sum, const int id) mutable {
     const auto block_checksum = id >= 0 ? block_index * id : 0;
     block_index++;
     return sum + block_checksum;

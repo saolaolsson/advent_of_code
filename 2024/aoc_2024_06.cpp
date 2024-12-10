@@ -8,8 +8,6 @@
 #include <set>
 
 struct Pose {
-  static constexpr auto directions =
-      std::to_array<Vector2i>({{0, -1}, {1, 0}, {0, 1}, {-1, 0}});
   Vector2i location;
   std::size_t direction_index;
 
@@ -27,12 +25,13 @@ std::optional<Pose> step(const Grid& grid, const Pose& guard_pose,
   auto new_direction_index = guard_pose.direction_index;
   while (true) {
     const auto new_location =
-        guard_pose.location + Pose::directions[new_direction_index];
+        guard_pose.location + Grid::CARDINAL_DIRECTIONS[new_direction_index];
     if (!grid.is_inside(new_location)) {
       return {};
     } else if (grid.location(new_location) == '#' ||
                new_location == blocked_location) {
-      new_direction_index = (new_direction_index + 1) % Pose::directions.size();
+      new_direction_index =
+          (new_direction_index + 1) % Grid::CARDINAL_DIRECTIONS.size();
     } else {
       return {{new_location, new_direction_index}};
     }
