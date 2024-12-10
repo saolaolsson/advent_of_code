@@ -43,13 +43,13 @@ std::pair<int, int> score_trail(const Grid& grid,
 
 int main() {
   const Grid grid{std::cin};
-  auto tailtrail_score = 0;
+  auto trailtail_score = 0;
   auto trail_score = 0;
   for (auto grid_it = grid.cbegin(); grid_it != grid.cend(); ++grid_it) {
     const auto [tts, ts] = score_trail(grid, grid_it);
-    tailtrail_score += tts;
+    trailtail_score += tts;
     trail_score += ts;
   }
-  std::cout << tailtrail_score << "\n";
+  std::cout << trailtail_score << "\n";
   std::cout << trail_score << "\n";
 }
