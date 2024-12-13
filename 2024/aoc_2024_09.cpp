@@ -99,7 +99,8 @@ static std::vector<int> defragment_files(std::vector<int> disk_map) {
 }
 
 static std::int64_t calc_checksum(const std::vector<int>& disk_map) {
-  const auto checksum = [block_index = 0](auto sum, const int id) mutable {
+  const auto checksum = [block_index = 0](const std::int64_t sum,
+                                          const int id) mutable {
     const auto block_checksum = id >= 0 ? block_index * id : 0;
     block_index++;
     return sum + block_checksum;
