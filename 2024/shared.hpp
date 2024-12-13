@@ -38,15 +38,7 @@ struct Vector2i {
     return v -= rhs;
   }
 
-  bool operator==(const Vector2i&) const = default;
-
-  bool operator<(const Vector2i& rhs) const {
-    if (x != rhs.x) {
-      return x < rhs.x;
-    } else {
-      return y < rhs.y;
-    }
-  }
+  auto operator<=>(const Vector2i&) const = default;
 };
 
 std::ostream& operator<<(std::ostream& ostream, const Vector2i& v);
