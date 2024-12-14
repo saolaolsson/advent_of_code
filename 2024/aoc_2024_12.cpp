@@ -37,8 +37,8 @@ static std::set<Vector2i> find_connected_locations(
   return connected_locations;
 }
 
-std::bitset<4> get_patch(const std::set<Vector2i>& locations,
-                         const Vector2i& top_left_corner_location) {
+static std::bitset<4> get_patch(const std::set<Vector2i>& locations,
+                                const Vector2i& top_left_corner_location) {
   const auto x = top_left_corner_location.x;
   const auto y = top_left_corner_location.y;
   return static_cast<unsigned long long>(
@@ -51,7 +51,7 @@ std::bitset<4> get_patch(const std::set<Vector2i>& locations,
 static int calc_perimeter(const std::set<Vector2i>& locations) {
   auto internal_perimeter = 0;
   for (const auto& location : locations) {
-    for (const auto delta : Grid::CARDINAL_DIRECTIONS) {
+    for (const auto& delta : Grid::CARDINAL_DIRECTIONS) {
       internal_perimeter += locations.contains(location + delta);
     }
   }
