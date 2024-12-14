@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+std::vector<int> extract_values(std::istream& istream);
+
 struct Line {
   std::string line_string;
   friend std::istream& operator>>(std::istream& istream, Line& line) {
