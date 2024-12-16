@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <istream>
 #include <iterator>
@@ -43,6 +44,8 @@ struct Vector2i {
   auto operator<=>(const Vector2i&) const = default;
 };
 
+Vector2i operator*(const int lhs, const Vector2i& rhs);
+
 std::ostream& operator<<(std::ostream& ostream, const Vector2i& v);
 
 class Grid {
@@ -87,6 +90,11 @@ class Grid {
   Grid(std::istream& istream) {
     std::copy(std::istream_iterator<Line>{istream}, {},
               std::back_inserter(locations));
+  }
+
+  Grid(const Vector2i& size, const char ch = '\0') {
+    std::fill_n(std::back_inserter(locations), size.y,
+                std::string(static_cast<std::size_t>(size.x), ch));
   }
 
   Vector2i size() const {
