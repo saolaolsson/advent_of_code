@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <istream>
 #include <iterator>
@@ -103,11 +104,13 @@ class Grid {
   }
 
   char location(const Vector2i& location) const {
+    assert_valid_location(location);
     return locations[static_cast<std::size_t>(location.y)]
                     [static_cast<std::size_t>(location.x)];
   }
 
   char& location(const Vector2i& location) {
+    assert_valid_location(location);
     return locations[static_cast<std::size_t>(location.y)]
                     [static_cast<std::size_t>(location.x)];
   }
@@ -120,6 +123,14 @@ class Grid {
   friend std::ostream& operator<<(std::ostream& ostream, const Grid& grid);
 
  private:
+  void assert_valid_location([[maybe_unused]] const Vector2i& location) const {
+    assert(location.x >= 0);
+    assert(location.y >= 0);
+    assert(static_cast<std::size_t>(location.y) < locations.size());
+    assert(static_cast<std::size_t>(location.x) <
+           locations[static_cast<std::size_t>(location.y)].size());
+  }
+
   std::vector<std::string> locations;
 };
 
