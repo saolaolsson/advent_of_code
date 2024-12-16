@@ -82,7 +82,7 @@ int main() {
   for (const auto& v : extract_values(std::cin) | std::views::chunk(4)) {
     robots.emplace_back(Vector2i{v[0], v[1]}, Vector2i{v[2], v[3]});
   }
-  Vector2i size{101, 103};
+  const Vector2i size{101, 103};
   std::cout << get_robot_safety_factor(tick(robots, size, 100), size) << "\n";
   const Vector2i alignment_index{67, 30};
   std::cout << get_ticks_to_christmas_tree(robots, size, alignment_index)
