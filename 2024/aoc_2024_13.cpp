@@ -36,9 +36,9 @@ static std::int64_t find_min_cost(const std::vector<Machine>& machines,
 
     for (auto a = a_init; a < a_init + period; a++) {
       const auto b = (x - a * machine.a_dx) / machine.b_dx;
-      const auto valid_solution = a * machine.a_dx + b * machine.b_dx == x &&
-                                  a * machine.a_dy + b * machine.b_dy == y;
-      if (valid_solution) {
+      const auto is_solution = a * machine.a_dx + b * machine.b_dx == x &&
+                               a * machine.a_dy + b * machine.b_dy == y;
+      if (is_solution) {
         static constexpr auto COST_A = 3;
         static constexpr auto COST_B = 1;
         cost += a * COST_A + b * COST_B;
@@ -50,9 +50,8 @@ static std::int64_t find_min_cost(const std::vector<Machine>& machines,
 }
 
 int main() {
-  const auto values = extract_values(std::cin);
   std::vector<Machine> machines;
-  for (const auto& v : values | std::views::chunk(6)) {
+  for (const auto& v : extract_values(std::cin) | std::views::chunk(6)) {
     machines.emplace_back(v[0], v[1], v[2], v[3], v[4], v[5]);
   }
   std::cout << find_min_cost(machines, 0) << "\n";
