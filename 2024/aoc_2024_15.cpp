@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-std::stringstream get_stream_to_empty_line(std::istream& istream) {
+static std::stringstream get_stream_to_empty_line(std::istream& istream) {
   std::stringstream string_ss;
   std::string string;
   while (std::getline(istream, string)) {
@@ -25,7 +25,7 @@ std::stringstream get_stream_to_empty_line(std::istream& istream) {
   return string_ss;
 }
 
-Vector2i char_to_direction(const char c) {
+static Vector2i char_to_direction(const char c) {
   static const auto directions_by_char = std::unordered_map<char, Vector2i>({
       {'^', Grid::CARDINAL_DIRECTIONS[0]},
       {'>', Grid::CARDINAL_DIRECTIONS[1]},
@@ -35,9 +35,9 @@ Vector2i char_to_direction(const char c) {
   return directions_by_char.at(c);
 }
 
-std::optional<Vector2i> find_empty_location(const Grid& grid,
-                                            const Vector2i& location,
-                                            const Vector2i& direction) {
+static std::optional<Vector2i> find_empty_location(const Grid& grid,
+                                                   const Vector2i& location,
+                                                   const Vector2i& direction) {
   auto l = location;
   while (true) {
     if (grid.location(l) == '.') {
@@ -49,8 +49,8 @@ std::optional<Vector2i> find_empty_location(const Grid& grid,
   }
 }
 
-Grid tick(const Grid& grid, const Vector2i& location,
-          const Vector2i& direction) {
+static Grid tick(const Grid& grid, const Vector2i& location,
+                 const Vector2i& direction) {
   const auto empty_location = find_empty_location(grid, location, direction);
   if (!empty_location) {
     return grid;
@@ -65,7 +65,7 @@ Grid tick(const Grid& grid, const Vector2i& location,
   return new_grid;
 }
 
-Grid widen_grid(const Grid& grid) {
+static Grid widen_grid(const Grid& grid) {
   Grid wide_grid({2 * grid.size().x, grid.size().y});
   for (auto y = 0; y < grid.size().y; y++) {
     for (auto x = 0; x < grid.size().x; x++) {
@@ -89,8 +89,8 @@ Grid widen_grid(const Grid& grid) {
   return wide_grid;
 }
 
-std::optional<Vector2i> wide_get_box_location(const Grid& grid,
-                                              const Vector2i& location) {
+static std::optional<Vector2i> wide_get_box_location(const Grid& grid,
+                                                     const Vector2i& location) {
   if (grid.location(location) == '[') {
     // return (top) left corner of box
     return location;
@@ -103,8 +103,9 @@ std::optional<Vector2i> wide_get_box_location(const Grid& grid,
   }
 }
 
-bool wide_is_blocked_direction(const Grid& grid, const Vector2i& box_location,
-                               const Vector2i& direction) {
+static bool wide_is_blocked_direction(const Grid& grid,
+                                      const Vector2i& box_location,
+                                      const Vector2i& direction) {
   if (direction.x == 0) {
     return grid.location(box_location + direction) == '#' ||
            grid.location(box_location + direction + Vector2i{1, 0}) == '#';
@@ -117,7 +118,7 @@ bool wide_is_blocked_direction(const Grid& grid, const Vector2i& box_location,
   return true;
 }
 
-std::vector<Vector2i> wide_find_pushed_adjacent_boxes(
+static std::vector<Vector2i> wide_find_pushed_adjacent_boxes(
     const Grid& grid, const Vector2i& box_location, const Vector2i& direction) {
   std::vector<Vector2i> box_locations;
   if (direction.x == 0) {
@@ -152,53 +153,64 @@ std::vector<Vector2i> wide_find_pushed_adjacent_boxes(
   return box_locations;
 }
 
-Grid wide_tick(const Grid& grid, const Vector2i& location,
-               const Vector2i& direction) {
-  auto l = location + direction;
-  if (grid.location(l) == '#') {
-    // movement direction is blocked
-    return grid;
-  } else if (grid.location(l) == '.') {
-    // movement direction is empty
-    auto new_grid = grid;
-    std::swap(new_grid.location(l), new_grid.location(location));
-    return new_grid;
-  } else {
-    // found a box potentially movable box in the direction of movement so do a
-    // breadth-first search to move leaf nodes first
-    auto new_grid = grid;
-    std::stack<Vector2i> box_locations;
-    box_locations.push(*wide_get_box_location(new_grid, l));
-    while (!box_locations.empty()) {
-      const auto& box_location = box_locations.top();
-      if (wide_is_blocked_direction(grid, box_location, direction)) {
-        // abort all box movement since this box cannot move
-        return grid;
-      }
-      const auto adjacent_boxes =
-          wide_find_pushed_adjacent_boxes(new_grid, box_location, direction);
-      if (adjacent_boxes.empty()) {
-        // nothing blocks this box so move it
-        new_grid.location(box_location + Vector2i{0, 0}) = '.';
-        new_grid.location(box_location + Vector2i{1, 0}) = '.';
-        new_grid.location(box_location + direction + Vector2i{0, 0}) = '[';
-        new_grid.location(box_location + direction + Vector2i{1, 0}) = ']';
-        box_locations.pop();
-      } else {
-        // check if adjacent boxes can move
-        for (const auto bl : adjacent_boxes) {
-          box_locations.push(bl);
-        }
+static std::optional<Grid> wide_move_boxes(const Grid& grid,
+                                           const Vector2i& location,
+                                           const Vector2i& direction) {
+  // breadth-first search to move (if possible) leaf nodes first
+  auto new_grid = grid;
+  std::stack<Vector2i> box_locations;
+  box_locations.push(*wide_get_box_location(new_grid, location));
+  while (!box_locations.empty()) {
+    const auto& box_location = box_locations.top();
+    if (wide_is_blocked_direction(grid, box_location, direction)) {
+      // abort all box movement since this box cannot move
+      return {};
+    }
+    const auto adjacent_boxes =
+        wide_find_pushed_adjacent_boxes(new_grid, box_location, direction);
+    if (adjacent_boxes.empty()) {
+      // nothing blocks this box so move it
+      new_grid.location(box_location + Vector2i{0, 0}) = '.';
+      new_grid.location(box_location + Vector2i{1, 0}) = '.';
+      new_grid.location(box_location + direction + Vector2i{0, 0}) = '[';
+      new_grid.location(box_location + direction + Vector2i{1, 0}) = ']';
+      box_locations.pop();
+    } else {
+      // check if adjacent boxes can move
+      for (const auto bl : adjacent_boxes) {
+        box_locations.push(bl);
       }
     }
-    // move robot
-    std::swap(new_grid.location(location),
-              new_grid.location(location + direction));
+  }
+  return new_grid;
+}
+
+static Grid wide_tick(const Grid& grid, const Vector2i& location,
+                      const Vector2i& direction) {
+  auto new_location = location + direction;
+  if (grid.location(new_location) == '#') {
+    // movement direction is blocked
+    return grid;
+  } else if (grid.location(new_location) == '.') {
+    // movement direction is empty
+    auto new_grid = grid;
+    std::swap(new_grid.location(new_location), new_grid.location(location));
     return new_grid;
+  } else {
+    // found a potentially movable box in the direction of movement
+    auto new_grid = wide_move_boxes(grid, new_location, direction);
+    if (new_grid) {
+      // moved boxes so move robot too
+      std::swap(new_grid->location(location), new_grid->location(new_location));
+      return *new_grid;
+    } else {
+      // cannot move boxes
+      return grid;
+    }
   }
 }
 
-int get_box_gps_sum(const Grid& grid) {
+static int get_box_gps_sum(const Grid& grid) {
   auto gps_sum = 0;
   for (auto grid_it = grid.cbegin(); grid_it != grid.cend(); ++grid_it) {
     if (*grid_it == 'O' || *grid_it == '[') {
