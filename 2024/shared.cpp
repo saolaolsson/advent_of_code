@@ -26,9 +26,9 @@ std::ostream& operator<<(std::ostream& ostream, const Vector2i& v) {
   return ostream << "(" << v.x << ", " << v.y << ")";
 }
 
-std::ostream& operator<<(std::ostream& ostream, const Grid& grid) {
-  for (const auto& s : grid.locations) {
-    ostream << s << "\n";
+std::ostream& operator<<(std::ostream& ostream, const Matrix<char>& matrix) {
+  for (const auto& v : matrix.locations) {
+    ostream << std::string{v.begin(), v.end()} << "\n";
   }
   return ostream;
 }

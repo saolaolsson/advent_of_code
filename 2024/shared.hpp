@@ -14,6 +14,9 @@ struct Line {
     return std::getline(istream, line.line_string);
   }
   operator std::string() const { return line_string; }
+  operator std::vector<char>() const {
+    return {line_string.cbegin(), line_string.cend()};
+  }
 };
 
 struct Vector2i {
@@ -49,34 +52,35 @@ Vector2i operator*(const int lhs, const Vector2i& rhs);
 
 std::ostream& operator<<(std::ostream& ostream, const Vector2i& v);
 
-class Grid {
+template <typename T>
+class Matrix {
  public:
   class iterator {
    public:
     using iterator_category = std::forward_iterator_tag;
-    using value_type = char;
+    using value_type = T;
     using difference_type = std::ptrdiff_t;
     using reference = Vector2i&;
 
-    iterator(const Grid* const grid, const Vector2i& location = {})
-        : grid{grid}, location{location} {}
+    iterator(const Matrix* const matrix, const Vector2i& location = {})
+        : matrix{matrix}, location{location} {}
     bool operator!=(const iterator& rhs) const {
-      return grid != rhs.grid || location != rhs.location;
+      return matrix != rhs.matrix || location != rhs.location;
     }
 
     operator Vector2i() const { return location; }
 
     iterator& operator++() {
-      if (++location.x == grid->size().x) {
+      if (++location.x == matrix->size().x) {
         location.x = 0;
         location.y++;
       }
       return *this;
     }
-    char operator*() const { return grid->location(location); }
+    T operator*() const { return matrix->location(location); }
 
    protected:
-    const Grid* grid;
+    const Matrix* matrix;
     Vector2i location;
   };
 
@@ -87,15 +91,16 @@ class Grid {
       {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}});
   static constexpr auto CARDINAL_DIRECTIONS =
       std::to_array<Vector2i>({{0, -1}, {1, 0}, {0, 1}, {-1, 0}});
+  enum CardinalDirection : int { NORTH, EAST, SOUTH, WEST, END };
 
-  Grid(std::istream& istream) {
+  Matrix(std::istream& istream) {
     std::copy(std::istream_iterator<Line>{istream}, {},
               std::back_inserter(locations));
   }
 
-  Grid(const Vector2i& size, const char ch = '\0') {
+  Matrix(const Vector2i& size, const T ch = {}) {
     std::fill_n(std::back_inserter(locations), size.y,
-                std::string(static_cast<std::size_t>(size.x), ch));
+                std::vector(static_cast<std::size_t>(size.x), ch));
   }
 
   Vector2i size() const {
@@ -103,13 +108,13 @@ class Grid {
             static_cast<int>(locations.size())};
   }
 
-  char location(const Vector2i& location) const {
+  T location(const Vector2i& location) const {
     assert_valid_location(location);
     return locations[static_cast<std::size_t>(location.y)]
                     [static_cast<std::size_t>(location.x)];
   }
 
-  char& location(const Vector2i& location) {
+  T& location(const Vector2i& location) {
     assert_valid_location(location);
     return locations[static_cast<std::size_t>(location.y)]
                     [static_cast<std::size_t>(location.x)];
@@ -120,7 +125,8 @@ class Grid {
            location.y < size().y;
   }
 
-  friend std::ostream& operator<<(std::ostream& ostream, const Grid& grid);
+  friend std::ostream& operator<<(std::ostream& ostream,
+                                  const Matrix<char>& matrix);
 
  private:
   void assert_valid_location([[maybe_unused]] const Vector2i& location) const {
@@ -131,10 +137,12 @@ class Grid {
            locations[static_cast<std::size_t>(location.y)].size());
   }
 
-  std::vector<std::string> locations;
+  std::vector<std::vector<T>> locations;
 };
 
-std::ostream& operator<<(std::ostream& ostream, const Grid& grid);
+std::ostream& operator<<(std::ostream& ostream, const Matrix<char>& matrix);
+
+using Grid = Matrix<char>;
 
 template <typename T>
 std::ostream& operator<<(std::ostream& ostream,
