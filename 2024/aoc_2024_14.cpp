@@ -12,9 +12,10 @@
 #include <ranges>
 #include <vector>
 
-int wrap(const int value, const int max) {
+template <typename T>
+T wrap(const T value, const T max) {
   const auto value_mod_max = value % max;
-  return value_mod_max < 0 ? max + value_mod_max : value_mod_max;
+  return value_mod_max < T{} ? max + value_mod_max : value_mod_max;
 }
 
 struct Robot {
@@ -22,7 +23,8 @@ struct Robot {
   Vector2i velocity;
 };
 
-void print_robots(const std::vector<Robot>& robots, const Vector2i& size) {
+static void print_robots(const std::vector<Robot>& robots,
+                         const Vector2i& size) {
   Grid grid{size, ' '};
   for (const auto& robot : robots) {
     grid.location(robot.location) = '#';
@@ -30,8 +32,8 @@ void print_robots(const std::vector<Robot>& robots, const Vector2i& size) {
   std::cout << grid << "\n";
 }
 
-std::vector<Robot> tick(const std::vector<Robot>& robots, const Vector2i& size,
-                        const int ticks = 1) {
+static std::vector<Robot> tick(const std::vector<Robot>& robots,
+                               const Vector2i& size, const int ticks = 1) {
   std::vector<Robot> new_robots;
   for (const auto& robot : robots) {
     Robot new_robot{robot.location + ticks * robot.velocity, robot.velocity};
@@ -42,15 +44,15 @@ std::vector<Robot> tick(const std::vector<Robot>& robots, const Vector2i& size,
   return new_robots;
 }
 
-std::optional<std::size_t> get_quadrant_index(const Vector2i& location,
-                                              const Vector2i& size) {
+static std::optional<std::size_t> get_quadrant_index(const Vector2i& location,
+                                                     const Vector2i& size) {
   return location.x == size.x / 2 || location.y == size.y / 2
              ? std::optional<std::size_t>{}
              : (location.x > size.x / 2) + 2 * (location.y > size.y / 2);
 }
 
-int get_robot_safety_factor(const std::vector<Robot>& robots,
-                            const Vector2i& size) {
+static int get_robot_safety_factor(const std::vector<Robot>& robots,
+                                   const Vector2i& size) {
   std::array<int, 4> quadrant_counts{};
   for (const auto& robot : robots) {
     if (const auto qi = get_quadrant_index(robot.location, size)) {
@@ -60,9 +62,9 @@ int get_robot_safety_factor(const std::vector<Robot>& robots,
   return std::ranges::fold_left(quadrant_counts, 1, std::multiplies());
 }
 
-int get_ticks_to_christmas_tree(const std::vector<Robot>& robots,
-                                const Vector2i& size,
-                                const Vector2i& alignment_index) {
+static int get_ticks_to_christmas_tree(const std::vector<Robot>& robots,
+                                       const Vector2i& size,
+                                       const Vector2i& alignment_index) {
   const auto period_x = size.x / std::gcd(size.x, size.y);
   for (auto x = 0; x < period_x; x++) {
     const auto y = (alignment_index.x + x * size.x) / size.y;
