@@ -1,6 +1,7 @@
 #include "shared.hpp"
 
 #include <cctype>
+#include <ios>
 #include <iostream>
 #include <ranges>
 #include <sstream>
@@ -8,6 +9,7 @@
 #include <vector>
 
 std::vector<int> extract_values(std::istream& istream) {
+  istream >> std::noskipws;
   const auto stripped_input = std::views::istream<char>(istream) |
                               std::views::transform([](char c) {
                                 return std::isdigit(c) || c == '-' ? c : ' ';
@@ -16,6 +18,16 @@ std::vector<int> extract_values(std::istream& istream) {
   auto stripped_input_ss = std::istringstream{stripped_input};
   return std::views::istream<int>(stripped_input_ss) |
          std::ranges::to<std::vector<int>>();
+}
+
+void print_grid(const Grid& grid, std::vector<Vector2i>& locations) {
+  auto new_grid = grid;
+  for (const auto& location : locations) {
+    new_grid.location(location) = 'x';
+  }
+  std::cout << "\033c";
+  std::cout << "\033[H";
+  std::cout << new_grid << "\n";
 }
 
 Vector2i operator*(const int lhs, const Vector2i& rhs) {

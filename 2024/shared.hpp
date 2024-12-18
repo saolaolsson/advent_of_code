@@ -144,6 +144,8 @@ std::ostream& operator<<(std::ostream& ostream, const Matrix<char>& matrix);
 
 using Grid = Matrix<char>;
 
+void print_grid(const Grid& grid, std::vector<Vector2i>& locations);
+
 template <typename T>
 std::ostream& operator<<(std::ostream& ostream,
                          const std::vector<T>& container) {
