@@ -55,7 +55,7 @@ int main() {
   std::stack<Pose> poses;
   poses.emplace(std::find(grid.cbegin(), grid.cend(), 'S'),
                 Grid::CardinalDirection::EAST, 0);
-  Matrix<int> min_costs{grid.size(), -1};
+  Matrix<int> min_costs{grid.size(), std::numeric_limits<int>::max()};
   auto min_cost = std::numeric_limits<int>::max();
   std::set<Vector2i> min_locations;
   while (!poses.empty()) {
@@ -69,8 +69,7 @@ int main() {
 
     const auto is_costlier_route =
         pose.cost > min_cost ||
-        (min_costs.location(pose.location) != -1 &&
-         pose.cost - min_costs.location(pose.location) > COST_TURN);
+        pose.cost - min_costs.location(pose.location) > COST_TURN;
     if (is_costlier_route) {
       continue;
     }
